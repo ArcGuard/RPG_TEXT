@@ -8,8 +8,8 @@ Table_stats = {}
 Table_names = {}
 Table_races = []
 dict_Race_name = {}
-Table_name_file = 'Table.txt'
-Status_name_file = 'Status.txt'
+Table_name_file = 'Table1.txt'
+Status_name_file = 'Status1.txt'
 
 Race_name = ['Высшие Эльфы', 'Лесные эльфы', 'Тёмные эльфы',
              'Орки', 'Гоблины', 'Гномы', 'Люди', 'Нежить', 'Демонстраторы']
@@ -35,7 +35,7 @@ def TableRaces():
     Table_races.append([1, 4, 3, 3, 3, 1])  # Демонстраторы
 
 
-def choise_race(number):
+def choise_race(number : int):
     print('Выберете расу:')
     for i in range(len(Race_name)):
         print(i + 1, ')', ' ', Race_name[i], sep='')
@@ -86,10 +86,6 @@ def chance():
     print('Шанс спас-броска равен ', '{:.2%}'.format(chances))
 
 
-
-
-
-
 def choise_name():
     for i in range(len(name)):
         print(i, ') ', name[i], sep='')
@@ -97,7 +93,7 @@ def choise_name():
     return name[a]
 
 
-def lvlUP(j):
+def lvlUP(j : int):
     name_lvlUP = name[j]
     Table_bar[j][2] += 1
     print('Игрок ', name_lvlUP, 'получил новый уровень! ')
@@ -122,6 +118,7 @@ def load_file():
     a = f.readline()
     i = 0
     while a != '':
+        print(a.split()[i])
         Table[i] = a.split()
         i += 1
         a = f.readline()
@@ -135,6 +132,14 @@ def load_file():
         i += 1
         a = f.readline()
     f.close()
+    for i in range(len(Table_names)):
+        for j in range(Number_of_Players):
+            Table[j][i] = float(Table[j][i])
+
+    for i in range(len(Bar_name)):
+        for j in range(Number_of_Players):
+            Table_bar[j][i] = float(Table_bar[j][i])
+
     return Table, Table_bar
 
 
@@ -148,60 +153,72 @@ def choise_name_AOE():
     return a
 
 
-def crit_damage(damage):
+def crit_damage(damage : float):
     cha = int(input('Введите шанс '))
     cha_damage = int(input('Введите увеличение урона '))
     rand = r.random()
-    if cha / 100 < rand:
-        print(damage)
-        damage += damage * cha_damage  / 100
-        print(damage)
-    return damage
 
-def another_damage(damage):
+    if cha / 100 > 1 - rand:
+        damage = damage * (1 + cha_damage / 100)
+        return damage
+    else:
+        return 0
+
+def another_damage(damage: float):
     cha_damage = int(input('Введите увеличение урона '))
-    damage += damage * (cha_damage / 100)
+    damage = damage * (1 + cha_damage / 100)
     return damage
 
-def resist_skill(damage):
+
+def resist_skill(damage: float):
     cha_damage = int(input('Введите сопротивление от скиллов '))
-    damage -= damage * (cha_damage / 100)
+    damage = damage * (cha_damage / 100)
     return damage
 
 
-
-def resist_damage(damage):
+def resist_damage(damage: float):
     print('''
 1) Крит
 2) Другие источники
 3) Сопротивление от способностей 
 4) Отсутствует ''')
-
     a = input('Выберите модификаторы урона ')
+    new_damage = damage
+    print(new_damage)
     if a == '1':
-        damage = crit_damage(damage)
+        crit = crit_damage(new_damage)
+        new_damage = round(crit,2)
+        print(new_damage)
+        return resist_damage(new_damage)
+    elif a == '2':
+        another = another_damage(new_damage)
+        new_damage = round(another,2)
+        return resist_damage(new_damage)
+    elif a == '3':
+        resist = resist_skill(new_damage)
+        new_damage -= round(resist,2)
+        print(new_damage)
+        return resist_damage(new_damage)
+    elif a == '4':
+        damage = new_damage
         print(damage)
-        resist_damage(damage)
-    if a == '2':
-        damage = another_damage(damage)
-        resist_damage(damage)
-    if a == '3':
-        damage = resist_damage(damage)
-        resist_damage(damage)
-    if a == '4':
         return damage
+    else:
+        return resist_damage(new_damage)
 
 
-def physics_resist(name_damage):
+
+
+def physics_resist(name_damage: int):
     agility = Table[name_damage][3]
     print(agility)
     d = int(agility / 5)
-    PR = round((d * 0.05) / (1 + d * 0.05),3)
+    PR = round((d * 0.05) / (1 + d * 0.05), 3)
     print('Сопротивление физическому урону равно', '{:.2%}'.format(PR))
     return PR
 
 
-def magic_resist(name_damage):
+def magic_resist(name_damage: int):
     wisdom = Table[name_damage][5]
     print(wisdom)
     Md = int(wisdom / 5)
@@ -209,36 +226,31 @@ def magic_resist(name_damage):
     print('Сопротивление магическому урону равно', '{:.2%}'.format(MR))
     return MR
 
-def choise_damage(damage, name_damage):
+
+def choise_damage(damage: float, name_damage: int):
     print('''
 1) Физический
 2) Магически ''')
     a = input('Выберите тип урона ')
-    print()
-    print(name_damage)
     print(damage)
     if a == '1':
         phy = physics_resist(name_damage)
         damage = damage * (1 - phy)
-        print(damage)
         return damage
     elif a == '2':
         mag = magic_resist(name_damage)
-        damage = damage * (1 - magic_resist(name_damage))
+        damage = damage * (1 - mag)
         return damage
 
 
-
-
-
-def in_damage():
+def in_damage(damage: float):
     name_damage = choise_name_AOE()
-    damage = float(input('Введите количество урона '))
-    damage = resist_damage(damage)
-
-
+    kek = resist_damage(damage)
+    damage = kek
+    print(damage)
     if len(name_damage) == 1:
-        damage = choise_damage(damage, name_damage[0])
+        choises = choise_damage(damage, name_damage[0])
+        damage = choises
         if Table_bar[name_damage[0]][0] - damage >= 0:
             Table_bar[name_damage[0]][0] -= damage
             print('Игрок', name[name_damage[0]], 'получает', damage, 'урона')
@@ -249,7 +261,8 @@ def in_damage():
 
     else:
         for i in range(len(name_damage)):
-            damage = choise_damage(damage, name_damage[i])
+            choises = choise_damage(damage, name_damage[i])
+            damage = choises
             if Table_bar[name_damage[i]][0] - damage >= 0:
                 print('Игрок', name[name_damage[i]], 'получает', damage, 'урона')
                 Table_bar[name_damage[i]][0] -= damage
@@ -257,7 +270,8 @@ def in_damage():
                 Table_bar[name_damage[i]][0] = 0
                 print('Игрок', name[name_damage[i]], 'Мёртв')
 
-def test_regen(j):
+
+def test_regen(j: int):
     if Table_bar[j][0] + Table_bar[j][1] >= Table[j][1] * 20:
         Table_bar[j][0] = Table[j][1] * 20
     else:
@@ -268,15 +282,19 @@ def test_regen(j):
     else:
         Table_bar[j][2] += Table_bar[j][3]
 
+
 def new_move():
     print('''
 1) Получение урона
 2) Нанесение урона
 3) Убийство врага
-4) Окончание хода ''')
+4) Окончание хода
+5) Вывести таблицу игроков
+6) Вывести статус бар игроков ''')
     ch = input('Выберите требуемое действие:')
     if ch == '1':
-        in_damage()
+        damage = float(input('Введите количество урона '))
+        in_damage(damage)
         new_move()
     elif ch == '2':
         new_move()
@@ -285,10 +303,13 @@ def new_move():
     elif ch == '4':
         for j in range(Number_of_Players):
             test_regen(j)
-
-        return step
-
-
+            return step
+    elif ch == '5':
+        print_Table()
+        new_move()
+    elif ch == '6':
+        print_Bar()
+        new_move()
 
 
 for i in range(len(Stats_name)):
@@ -302,20 +323,17 @@ for i in range(Number_of_Players):
 for i in range(Number_of_Players):
     Table_bar[i][0] = 20 * Table[i][1]  # HP
     Table_bar[i][2] = 15 * Table[i][4]  # MP
-    Table_bar[i][1] = round(Table_bar[i][0] / 15)
-    Table_bar[i][3] = round(Table_bar[i][2] / 15)
+    Table_bar[i][1] = round(Table[i][1] / 15)
+    Table_bar[i][3] = round(Table[i][5] / 15)
     Table_bar[i][4] = 1  # LVL
     Table_bar[i][6] = 100  # Current XP
-
 
 while True:
     menu()
 
-
     choise = input('Выберите требуемое действие:')
     if choise == '1':
         Table, Table_bar = load_file()
-
 
     elif choise == '2':
         print_Table()
@@ -330,6 +348,6 @@ while True:
         print('Идёт', step, 'ход')
 
     for j in range(Number_of_Players):
-        if Table_bar[j][5] >= int(Table_bar[j][6] * (1.1 ** (Table_bar[j][4] - 1))):
+        if Table_bar[j][5] >= Table_bar[j][6] * (1.1 ** (Table_bar[j][4] - 1)):
             lvlUP(j)
     save_file(Table, Table_bar)

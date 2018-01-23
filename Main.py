@@ -101,7 +101,7 @@ def choise_name():
     for i in range(len(name)):
         print(i, ') ', name[i], sep='')
     a = int(input('Выберете игрока:'))
-    return name[a]
+    return a
 
 # Выбор несколькоих имён для действия
 def choise_name_AOE():
@@ -314,6 +314,48 @@ def test_regen(j: int):
     else:
         Table_bar[j][2] += Table_bar[j][3]
 
+# Ужасно некрасивая, но до ужаса простая функция
+# Которая изменяет статы с клавиатуры
+def change_stats(j):
+    print('''
+1) Luck
+2) Health
+3) Strength
+4) Agility
+5) Intelligence
+6) Wisdom
+7) HP
+8) HP Regen
+9) MP
+10) MP Regen''')
+    choise = input('Выберете что изменить: ')
+    value = float(input('Выберете на сколько изменить '))
+    if choise == '1':
+        Table[j][0] += value
+    elif choise == '2':
+        Table[j][1] += value
+    elif choise == '3':
+        Table[j][2] += value
+    elif choise == '4':
+        Table[j][3] += value
+    elif choise == '5':
+        Table[j][4] += value
+    elif choise == '6':
+        Table[j][5] += value
+    elif choise == '7':
+        Table_bar[j][0] += value
+    elif choise == '8':
+        Table_bar[j][1] += value
+    elif choise == '9':
+        Table_bar[j][2] += value
+    elif choise == '10':
+        Table_bar[j][3] += value
+
+def regen():
+    for j in range(Number_of_Players):
+        pass
+
+
 # Опять же много принтов
 # И сразу же выбор действия
 # И вызов различных функций, исходя из выбора
@@ -392,7 +434,8 @@ while True:
     # Измена характеристик
     elif choise == '5':
         change_name = choise_name()
-        
+        change_stats(change_name)
+
         new_move()
 
     # Проверка на опыт

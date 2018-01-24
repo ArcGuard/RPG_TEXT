@@ -47,7 +47,7 @@ def TableRaces():
 
 # Выбор расы для каждого игрока в начале игры
 def choise_race(number : int):
-    print('Выберете расу:')
+    print('Выберете расу: ')
     for i in range(len(Race_name)):
         print(i + 1, ')', ' ', Race_name[i], sep='')
     name_race = int(input())
